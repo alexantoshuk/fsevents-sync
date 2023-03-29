@@ -10,7 +10,7 @@ Restart=always
 RestartSec=5
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=rclone-sync
+SyslogIdentifier=fsevents-sync-server
 
 [Install]
 WantedBy=multi-user.target
