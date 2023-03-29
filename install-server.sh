@@ -1,9 +1,11 @@
 #!/bin/bash
-cp -f ./.fsevents-sync-server.json ~/.fsevents-sync-server.json
-sudo cp -f ./scripts/fsevents-sync-server.py /usr/local/bin/fsevents-sync-server.py
-sudo sed -i "s/\$USER/$USER/g" /usr/local/bin/fsevents-sync-server.py
-sudo systemctl disable fsevents-sync-server.service
-sudo cp -f ./rclone-sync.service /etc/systemd/system/fsevents-sync-server.service
+NAME=fsevents-sync-server
+
+cp -f ./.$NAME.json ~/.$NAME.json
+sudo cp -f ./scripts/$NAME.py /usr/local/bin/$NAME.py
+sudo sed -i "s/\$USER/$USER/g" /usr/local/bin/$NAME.py
+sudo systemctl disable $NAME.service
+sudo cp -f ./$NAME.service /etc/systemd/system/$NAME.service
 sudo systemctl daemon-reload
-sudo systemctl enable fsevents-sync-server.service
-sudo systemctl start fsevents-sync-server.service
+sudo systemctl enable $NAME.service
+sudo systemctl start $NAME.service
