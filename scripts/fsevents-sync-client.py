@@ -237,7 +237,9 @@ def main():
     logging.root.setLevel(log_level)
 
     if (not watch_dir):
-        msg = "Config '~/.fsevents-sync.json' has invalid data. Config template:\n" + conf_template
+        msg = "Config '{0}' has invalid data. Config template:\n" + \
+            conf_template
+        msg = msg.format(conf_path)
         logging.error(msg)
         raise Exception(msg)
 
