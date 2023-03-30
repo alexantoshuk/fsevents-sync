@@ -1,13 +1,14 @@
 [Unit]
+Requires=network-online.target
 StartLimitIntervalSec=200
 StartLimitBurst=10
 
 [Service]
 Type=simple
 User=$USER
-ExecStart=/usr/bin/python3 /usr/local/bin/fsevents-sync-server.py
+ExecStart=/usr/bin/python3 $FSEVENTSDIR/fsevents-sync-server.py
 Restart=always
-RestartSec=5
+RestartSec=3
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=fsevents-sync-server
