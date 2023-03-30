@@ -188,6 +188,9 @@ def main():
         level=logging.INFO, format='%(asctime)s %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
     if not conf_path.is_file():
+        conf_path = Path(__file__).parent.joinpath(
+            ".fsevents-sync-server.json")
+    if not conf_path.is_file():
         msg = "Config '{0}' is not exists. Config template:\n" + conf_template
         msg = msg.format(conf_path)
         logging.error(msg)
