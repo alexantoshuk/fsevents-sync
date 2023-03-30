@@ -1,6 +1,6 @@
 #!/bin/bash
 NAME=fsevents-sync-client
-FSEVENTSDIR = /mnt/data/tk/scripts/fsevents
+FSEVENTSDIR=/mnt/data/tk/scripts/fsevents
 
 cp -f ./.$NAME.json ~/.$NAME.json
 sudo cp -f ./scripts/$NAME.py /usr/local/bin/$NAME.py
