@@ -118,7 +118,6 @@ class EventHandler(watchdog.events.FileSystemEventHandler):
 
         self.timer.stop()
 
-        self.logger.info('')
         event = self.movedir
 
         self.logger.info('Move dir %s to "%s"',
@@ -186,7 +185,10 @@ class EventHandler(watchdog.events.FileSystemEventHandler):
         self.client.send(msg)
 
     def on_modified(self, event):
-        return
+        if event.is_directory:
+            return
+
+        self.end_dirmove()
         if ignore(event.src_path):
             return
 
@@ -216,7 +218,7 @@ def main():
     port = 8888
 
     logging.basicConfig(
-        level=logging.INFO, format='%(asctime)s %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        level=logging.INFO, format='%(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
     if not conf_path.is_file():
         conf_path = Path(__file__).parent.joinpath(

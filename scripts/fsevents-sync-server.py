@@ -9,21 +9,22 @@ def touch(path):
     if path.is_file():
         with open(path, 'a'):
             pass
+    return path
 
 
 class FSEvent:
     def __init__(self, logger=None):
         self.logger = logger or logging.root
+        self.tempdir = Path("/mnt/data/tmp")
 
     def move(self, item, src, dst):
         if item == 'file':
             try:
                 self.logger.debug('Try to touch {0}'.format(dst))
                 touch(dst)
-                self.logger.debug('Try to touch {0}'.format(src))
-                touch(src)
-                self.logger.debug('Try to delete {0}'.format(src))
-                src.unlink()
+                self.logger.debug(
+                    'Try to touch {0} then delete it'.format(src))
+                touch(src).unlink()
                 self.logger.info(
                     'Move {0} "{1}" to "{2}"'.format(item, src, dst))
             except Exception as e:
@@ -35,16 +36,12 @@ class FSEvent:
             try:
                 tmp = dst.with_suffix('.__tmp__')
                 self.logger.debug(
-                    'Try to rename {0} to {1}'.format(dst, tmp))
-                dst.rename(tmp)
-                self.logger.debug(
-                    'Try to rename {0} to {1}'.format(tmp, dst))
-                tmp.rename(dst)
+                    'Try to rename {0} to {1} and vice versa'.format(dst, tmp))
+                dst.rename(tmp).rename(dst)
 
-                self.logger.debug('Try to make dir {0}'.format(src))
-                src.mkdir()
-                self.logger.debug('Try to remove dir {0}'.format(src))
-                src.rmdir()
+                self.logger.debug(
+                    'Try to make dir {0} then remove it'.format(src))
+                src.mkdir().rmdir()
 
                 self.logger.info(
                     'Move {0} "{1}" to "{2}"'.format(item, src, dst))
@@ -66,11 +63,8 @@ class FSEvent:
             try:
                 dst = src.with_suffix('.__tmp__')
                 self.logger.debug(
-                    'Try to rename {0} to {1}'.format(src, dst))
-                src.rename(dst)
-                self.logger.debug(
-                    'Try to rename {0} to {1}'.format(dst, src))
-                dst.rename(src)
+                    'Try to rename {0} to {1} and vice versa'.format(src, dst))
+                src.rename(dst).rename(src)
 
                 self.logger.info(
                     'Create {0} "{1}"'.format(item, src))
@@ -82,10 +76,9 @@ class FSEvent:
     def delete(self, item, src):
         if item == 'file':
             try:
-                self.logger.debug('Try to touch {0}'.format(src))
-                touch(src)
-                self.logger.debug('Try to delete {0}'.format(src))
-                src.unlink()
+                self.logger.debug(
+                    'Try to touch {0} then remove it'.format(src))
+                touch(src).unlink()
                 self.logger.info(
                     'Delete {0} "{1}"'.format(item, src))
             except Exception as e:
@@ -94,10 +87,9 @@ class FSEvent:
                 self.logger.error('{0}'.format(e))
         elif item == 'dir':
             try:
-                self.logger.debug('Try to make dir {0}'.format(src))
-                src.mkdir()
-                self.logger.debug('Try to remove dir {0}'.format(src))
-                src.rmdir()
+                self.logger.debug(
+                    'Try to make dir {0} then remove it'.format(src))
+                src.mkdir().rmdir()
                 self.logger.info(
                     'Delete {0} "{1}"'.format(item, src))
             except Exception as e:
@@ -106,8 +98,8 @@ class FSEvent:
                 self.logger.error('{0}'.format(e))
 
     def modify(self, item, src):
-        # not needed
-        return
+        if item != 'file':
+            return
         self.logger.debug('Try to touch {0}'.format(src))
         src.touch()
         self.logger.info('Modify {0} "{1}"'.format(item, src))
@@ -185,7 +177,7 @@ def main():
     port = 8888
 
     logging.basicConfig(
-        level=logging.INFO, format='%(asctime)s %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        level=logging.INFO, format='%(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
     if not conf_path.is_file():
         conf_path = Path(__file__).parent.joinpath(
