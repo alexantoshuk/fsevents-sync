@@ -191,7 +191,7 @@ class EventHandler(watchdog.events.FileSystemEventHandler):
         self.end_dirmove()
         if ignore(event.src_path):
             return
-
+        return
         what = 'dir' if event.is_directory else 'file'
 
         self.logger.info('Modify %s "%s"', what, event.src_path)

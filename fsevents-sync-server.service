@@ -1,5 +1,5 @@
 [Unit]
-Requires=network-online.target
+After=network.target mnt-data.mount
 StartLimitIntervalSec=200
 StartLimitBurst=10
 

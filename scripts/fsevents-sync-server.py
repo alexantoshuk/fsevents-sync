@@ -2,6 +2,8 @@ import asyncio
 import json
 import logging
 from pathlib import Path
+import os
+import time
 
 
 def touch(path):
@@ -23,8 +25,11 @@ class FSEvent:
                 self.logger.debug('Try to touch {0}'.format(dst))
                 touch(dst)
                 self.logger.debug(
-                    'Try to touch {0} then delete it'.format(src))
-                touch(src).unlink()
+                    'Try to touch {0}'.format(src))
+                touch(src)
+                self.logger.debug(
+                    'Try to delete {0}'.format(src))
+                src.unlink()
                 self.logger.info(
                     'Move {0} "{1}" to "{2}"'.format(item, src, dst))
             except Exception as e:
@@ -36,15 +41,31 @@ class FSEvent:
             try:
                 tmp = dst.with_suffix('.__tmp__')
                 self.logger.debug(
-                    'Try to rename {0} to {1} and vice versa'.format(dst, tmp))
-                dst.rename(tmp).rename(dst)
+                    'Try to rename {0} to {1}'.format(dst, tmp))
+                dst.rename(tmp)
+                self.logger.debug(
+                    'Try to rename {0} to {1}'.format(tmp, dst))
+                tmp.rename(dst)
 
                 self.logger.debug(
-                    'Try to make dir {0} then remove it'.format(src))
-                src.mkdir().rmdir()
+                    'Try to make dir {0}'.format(src))
+                src.mkdir()
+                self.logger.debug(
+                    'Try to delete dir {0}'.format(src))
+                src.rmdir()
+                self.logger.info(
+                    'Delete {0} "{1}"'.format(item, src))
 
                 self.logger.info(
                     'Move {0} "{1}" to "{2}"'.format(item, src, dst))
+
+                # self.logger.debug(
+                #     'Try to update items in dir {0}'.format(dst))
+
+                # for root, dirs, files in os.walk(dst):
+                #     for file in files:
+                #         path = Path(root).joinpath(file)
+                #         self.close('file', path)
 
             except Exception as e:
                 self.logger.error(
@@ -54,20 +75,37 @@ class FSEvent:
     def create(self, item, src):
         if item == 'file':
             self.logger.debug('Try to touch {0}'.format(src))
-            touch(src)
+            try:
+                touch(src)
+                self.logger.info(
+                    'Create {0} "{1}"'.format(item, src))
 
-            self.logger.info(
-                'Create {0} "{1}"'.format(item, src))
+            except Exception as e:
+                self.logger.error(
+                    'Can\'n generate event: create {0} "{1}"'.format(item, src))
+                self.logger.error('{0}'.format(e))
 
         elif item == 'dir':
             try:
-                dst = src.with_suffix('.__tmp__')
+                tmp = src.with_suffix('.__tmp__')
                 self.logger.debug(
-                    'Try to rename {0} to {1} and vice versa'.format(src, dst))
-                src.rename(dst).rename(src)
-
+                    'Try to rename dir {0} to {1}'.format(src, tmp))
+                src.rename(tmp)
+                self.logger.debug(
+                    'Try to rename dir {0} to {1}'.format(tmp, src))
+                tmp.rename(src)
                 self.logger.info(
                     'Create {0} "{1}"'.format(item, src))
+
+                time.sleep(1.0)
+                self.logger.debug(
+                    'Try to update items in dir {0}'.format(src))
+
+                for root, dirs, files in os.walk(src):
+                    for file in files:
+                        path = Path(root).joinpath(file)
+                        self.close('file', path)
+
             except Exception as e:
                 self.logger.error(
                     'Can\'n generate event: create {0} "{1}"'.format(item, src))
@@ -77,8 +115,11 @@ class FSEvent:
         if item == 'file':
             try:
                 self.logger.debug(
-                    'Try to touch {0} then remove it'.format(src))
-                touch(src).unlink()
+                    'Try to touch {0}'.format(src))
+                touch(src)
+                self.logger.debug(
+                    'Try to delete {0}'.format(src))
+                src.unlink()
                 self.logger.info(
                     'Delete {0} "{1}"'.format(item, src))
             except Exception as e:
@@ -88,8 +129,11 @@ class FSEvent:
         elif item == 'dir':
             try:
                 self.logger.debug(
-                    'Try to make dir {0} then remove it'.format(src))
-                src.mkdir().rmdir()
+                    'Try to make dir {0}'.format(src))
+                src.mkdir()
+                self.logger.debug(
+                    'Try to delete dir {0}'.format(src))
+                src.rmdir()
                 self.logger.info(
                     'Delete {0} "{1}"'.format(item, src))
             except Exception as e:
@@ -101,13 +145,23 @@ class FSEvent:
         if item != 'file':
             return
         self.logger.debug('Try to touch {0}'.format(src))
-        src.touch()
-        self.logger.info('Modify {0} "{1}"'.format(item, src))
+        try:
+            src.touch()
+            self.logger.info('Modify {0} "{1}"'.format(item, src))
+        except Exception as e:
+            self.logger.error(
+                'Can\'n generate event: modify {0} "{1}"'.format(item, src))
+            self.logger.error('{0}'.format(e))
 
     def close(self, item, src):
         self.logger.debug('Try to touch {0}'.format(src))
-        touch(src)
-        self.logger.info('Close {0} "{1}"'.format(item, src))
+        try:
+            touch(src)
+            self.logger.info('Close {0} "{1}"'.format(item, src))
+        except Exception as e:
+            self.logger.error(
+                'Can\'n generate event: close {0} "{1}"'.format(item, src))
+            self.logger.error('{0}'.format(e))
 
     def generate(self, data):
         event = data['event']
